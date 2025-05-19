@@ -40,6 +40,8 @@ if uploaded_file is not None:
     y_pred = rf.predict(X_test)
     accuracy = accuracy_score(y_test, y_pred)
 
+    st.title("Diabetes Prediction App 🩺")
+    
     st.subheader("Make a Prediction")
     Pregnancies = st.number_input("Pregnancies", value=5)
     Glucose = st.number_input("Glucose", value=166)
@@ -49,6 +51,12 @@ if uploaded_file is not None:
     BMI = st.number_input("BMI", value=25.8)
     DiabetesPedigreeFunction = st.number_input("DiabetesPedigreeFunction", value=0.587)
     Age = st.number_input("Age", value=51)
+
+    if st.button("Predict Outcome"):
+    input_data = pd.DataFrame([[Pregnancies, Glucose, BloodPressure, SkinThickness, Insulin, BMI, DiabetesPedigreeFunction, Age]], columns=X.columns)
+    prediction = model.predict(input_data)[0]
+    result = "Diabetic" if prediction == 1 else "Not Diabetic"
+    st.success(f"Predicted Outcome: **{result}**")
     
 else:
     st.info("Please upload a CSV file to proceed.")
