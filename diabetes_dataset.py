@@ -38,7 +38,7 @@ if uploaded_file is not None:
 
     # Predict
     y_pred = rf.predict(X_test)
-    accuracy = accuracy_score(y_test, y_pred))
+    accuracy = accuracy_score(y_test, y_pred)
 
     st.subheader("Make a Prediction")
     Pregnancies = st.number_input("Pregnancies", value=5)
