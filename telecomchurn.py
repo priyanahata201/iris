@@ -21,26 +21,6 @@ if uploaded_file is not None:
         df = pd.read_csv(uploaded_file)
         st.success("File uploaded and read successfully!")
 
-        # Preview the data
-        st.subheader("Data Preview:")
-        st.dataframe(df.head())
-
-        # Show null value summary
-        st.subheader("Null Value Summary:")
-        st.write(df.isnull().sum())
-
-        # Show dataset shape
-        st.write(f"Total rows: {df.shape[0]}")
-
-        # Correlation heatmap
-        st.subheader("Correlation Heatmap:")
-        numeric_df = df.select_dtypes(include=np.number)
-        correlation_matrix = numeric_df.corr()
-
-        fig, ax = plt.subplots(figsize=(12, 10))
-        sns.heatmap(correlation_matrix, annot=True, ax=ax, cmap="coolwarm")
-        st.pyplot(fig)
-
         # Feature engineering: Convert 'area code' to string
         if 'area code' in df.columns:
             df['area code'] = df['area code'].astype(str)
