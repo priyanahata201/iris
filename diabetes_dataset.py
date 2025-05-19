@@ -62,4 +62,4 @@ if uploaded_file is not None:
         st.success(f"Predicted Outcome: **{result}**")
     
 else:
-    st.info("Please upload a CSV file to proceed.")
+    st.info("Please upload a CSV file to proceed.") 
