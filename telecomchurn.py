@@ -49,13 +49,8 @@ if uploaded_file is not None:
         # Predict
         y_pred = xgb.predict(X_test)
 
-        # Model performance
-        st.subheader("Model Performance")
+        # Accuracy
         st.write(f"Accuracy: {accuracy_score(y_test, y_pred) * 100:.2f}%")
-        st.text("Confusion Matrix:")
-        st.text(confusion_matrix(y_test, y_pred))
-        st.text("Classification Report:")
-        st.text(classification_report(y_test, y_pred))
 
         # Live prediction
         st.subheader("Make a Live Prediction")
