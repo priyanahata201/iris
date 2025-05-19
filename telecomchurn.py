@@ -63,17 +63,19 @@ if uploaded_file is not None:
                 user_input[col] = st.number_input(f"{col}", value=float(X[col].mean()))
             else:
                 user_input[col] = st.selectbox(f"{col}", options=list(df[col].unique()))
+                
+        feature_names = X.columns
 
         if st.button("Predict Churn"):
             input_df = pd.DataFrame([user_input])
             input_df = pd.get_dummies(input_df)
 
-            # Align with training columns
-            input_df = input_df.reindex(columns=X.columns, fill_value=0)
+            # Align with training features
+            input_df = input_df.reindex(columns=feature_names, fill_value=0)
+
             prediction = xgb.predict(input_df)[0]
             result = "Churned" if prediction == 1 else "Not Churned"
             st.success(f"Predicted Outcome: **{result}**")
-
     except Exception as e:
         st.error(f"Error reading the file: {e}")
 else:
