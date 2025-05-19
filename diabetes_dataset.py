@@ -42,6 +42,9 @@ if uploaded_file is not None:
 
     st.title("Diabetes Prediction App")
     
+    st.subheader("Model Accuracy")
+    st.write(f"Accuracy: {accuracy * 100:.2f}%")
+    
     st.subheader("Make a Prediction")
     Pregnancies = st.number_input("Pregnancies", value=5)
     Glucose = st.number_input("Glucose", value=166)
