@@ -1,50 +1,100 @@
-import numpy as np
+import streamlit as st
 import pandas as pd
-import matplotlib.pyplot as plt
+import numpy as np
 import seaborn as sns
-import statsmodels.api as sm
-from statsmodels.stats.outliers_influence import variance_inflation_factor
-import warnings
-warnings.filterwarnings('ignore')
+import matplotlib.pyplot as plt
 from xgboost import XGBClassifier
+from sklearn.model_selection import train_test_split
 from sklearn.metrics import confusion_matrix, classification_report, accuracy_score
+import warnings
 
-#load telecom_churn.csv
-df = pd.read_csv('telecom_churn.csv')
-#print firs 5 rows
-df.head()
+warnings.filterwarnings('ignore')
 
-#Check for null values
-df.isnull().sum()
+# Streamlit App Title
+st.title("Telecom Churn Prediction App")
 
-#plot distributions of all the variables
-df.hist(figsize=(25,25))
-plt.show()
+# File Upload
+uploaded_file = st.file_uploader("Upload your telecom churn CSV file", type=["csv"])
 
-#display the number of rows
-df.shape[0]
+if uploaded_file is not None:
+    try:
+        df = pd.read_csv(uploaded_file)
+        st.success("File uploaded and read successfully!")
 
-#check for multicollinearity
-# Select only numeric columns before calculating correlation
-correlation_matrix = df.select_dtypes(include=np.number).corr()
-#make into heat map
-sns.heatmap(correlation_matrix,annot=True)
+        # Preview the data
+        st.subheader("Data Preview:")
+        st.dataframe(df.head())
 
-#make area code string
-df['area code'] = df['area code'].astype(str)
+        # Show null value summary
+        st.subheader("Null Value Summary:")
+        st.write(df.isnull().sum())
 
-#build and train XGBoost model
-xgb = XGBClassifier(random_state=42)
-xgb.fit(x_train,y_train)
+        # Show dataset shape
+        st.write(f"Total rows: {df.shape[0]}")
 
-#make predictions on the test set
-y_pred = xgb.predict(x_test)
+        # Correlation heatmap
+        st.subheader("Correlation Heatmap:")
+        numeric_df = df.select_dtypes(include=np.number)
+        correlation_matrix = numeric_df.corr()
 
-#print accuracy
-print(accuracy_score(y_test,y_pred))
+        fig, ax = plt.subplots(figsize=(12, 10))
+        sns.heatmap(correlation_matrix, annot=True, ax=ax, cmap="coolwarm")
+        st.pyplot(fig)
 
-#print confusion matrix
-print(confusion_matrix(y_test,y_pred))
+        # Feature engineering: Convert 'area code' to string
+        if 'area code' in df.columns:
+            df['area code'] = df['area code'].astype(str)
 
-#print classification report
-print(classification_report(y_test,y_pred))
+        # Drop non-numeric columns (or encode if preferred)
+        df_encoded = pd.get_dummies(df, drop_first=True)
+
+        # Split data into features and target
+        if 'churn' in df_encoded.columns:
+            X = df_encoded.drop('churn', axis=1)
+            y = df_encoded['churn']
+        else:
+            st.error("Target column 'churn' not found.")
+            st.stop()
+
+        # Train-test split
+        X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.2, random_state=42, stratify=y)
+
+        # Train XGBoost model
+        xgb = XGBClassifier(random_state=42, use_label_encoder=False, eval_metric='logloss')
+        xgb.fit(X_train, y_train)
+
+        # Predict
+        y_pred = xgb.predict(X_test)
+
+        # Model performance
+        st.subheader("Model Performance")
+        st.write(f"Accuracy: {accuracy_score(y_test, y_pred) * 100:.2f}%")
+        st.text("Confusion Matrix:")
+        st.text(confusion_matrix(y_test, y_pred))
+        st.text("Classification Report:")
+        st.text(classification_report(y_test, y_pred))
+
+        # Live prediction
+        st.subheader("Make a Live Prediction")
+        user_input = {}
+        for col in X.columns:
+            dtype = X[col].dtype
+            if np.issubdtype(dtype, np.number):
+                user_input[col] = st.number_input(f"{col}", value=float(X[col].mean()))
+            else:
+                user_input[col] = st.selectbox(f"{col}", options=list(df[col].unique()))
+
+        if st.button("Predict Churn"):
+            input_df = pd.DataFrame([user_input])
+            input_df = pd.get_dummies(input_df)
+
+            # Align with training columns
+            input_df = input_df.reindex(columns=X.columns, fill_value=0)
+            prediction = xgb.predict(input_df)[0]
+            result = "Churned" if prediction == 1 else "Not Churned"
+            st.success(f"Predicted Outcome: **{result}**")
+
+    except Exception as e:
+        st.error(f"Error reading the file: {e}")
+else:
+    st.info("Please upload a CSV file to proceed.")
