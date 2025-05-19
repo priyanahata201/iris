@@ -23,7 +23,7 @@ if uploaded_file is not None:
     # Replace zeros in certain columns with the median (excluding columns where 0 is valid)
     columns_to_fix = ['Glucose', 'BloodPressure', 'SkinThickness', 'Insulin', 'BMI']
     for col in columns_to_fix:
-    df[col] = df[col].replace(0, df[col].median())
+        df[col] = df[col].replace(0, df[col].median())
 
     # Feature and target split
     X = df.drop('Outcome', axis=1)
