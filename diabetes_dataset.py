@@ -40,7 +40,7 @@ if uploaded_file is not None:
     y_pred = rf.predict(X_test)
     accuracy = accuracy_score(y_test, y_pred)
 
-    st.title("Diabetes Prediction App 🩺")
+    st.title("Diabetes Prediction App")
     
     st.subheader("Make a Prediction")
     Pregnancies = st.number_input("Pregnancies", value=5)
