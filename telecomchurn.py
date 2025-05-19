@@ -36,6 +36,9 @@ if uploaded_file is not None:
             st.error("Target column 'churn' not found.")
             st.stop()
 
+        # Save training column names
+        feature_names = X.columns
+
         # Train-test split
         X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.2, random_state=42, stratify=y)
 
@@ -57,25 +60,32 @@ if uploaded_file is not None:
         # Live prediction
         st.subheader("Make a Live Prediction")
         user_input = {}
-        for col in X.columns:
-            dtype = X[col].dtype
-            if np.issubdtype(dtype, np.number):
-                user_input[col] = st.number_input(f"{col}", value=float(X[col].mean()))
+
+        # Reconstruct original columns from df (not encoded)
+        for col in df.columns:
+            if col == 'churn':
+                continue  # Skip target variable
+            if df[col].dtype == 'object' or df[col].dtype.name == 'category':
+                user_input[col] = st.selectbox(f"{col}", options=df[col].unique())
             else:
-                user_input[col] = st.selectbox(f"{col}", options=list(df[col].unique()))
-                
-        feature_names = X.columns
+                user_input[col] = st.number_input(f"{col}", value=float(df[col].mean()))
 
         if st.button("Predict Churn"):
             input_df = pd.DataFrame([user_input])
-            input_df = pd.get_dummies(input_df)
+            input_df_encoded = pd.get_dummies(input_df)
 
             # Align with training features
-            input_df = input_df.reindex(columns=feature_names, fill_value=0)
+            input_df_encoded = input_df_encoded.reindex(columns=feature_names, fill_value=0)
 
-            prediction = xgb.predict(input_df)[0]
+            # Optional: Warn if any columns were missing
+            missing_cols = set(feature_names) - set(input_df_encoded.columns)
+            if missing_cols:
+                st.warning(f"Note: Missing columns in input were set to 0: {missing_cols}")
+
+            prediction = xgb.predict(input_df_encoded)[0]
             result = "Churned" if prediction == 1 else "Not Churned"
             st.success(f"Predicted Outcome: **{result}**")
+
     except Exception as e:
         st.error(f"Error reading the file: {e}")
 else:
