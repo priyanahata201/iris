@@ -54,7 +54,7 @@ if uploaded_file is not None:
 
     if st.button("Predict Outcome"):
         input_data = pd.DataFrame([[Pregnancies, Glucose, BloodPressure, SkinThickness, Insulin, BMI, DiabetesPedigreeFunction, Age]], columns=X.columns)
-        prediction = model.predict(input_data)[0]
+        prediction = rf.predict(input_data)[0]
         result = "Diabetic" if prediction == 1 else "Not Diabetic"
         st.success(f"Predicted Outcome: **{result}**")
     
