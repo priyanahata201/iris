@@ -5,3 +5,8 @@ numpy
 matplotlib
 seaborn
 xgboost
+streamlit
+pandas
+pyyaml
+openai
+langchain
